@@ -2,43 +2,71 @@
 pragma solidity ^0.8.6;
 
 contract CryptoKoffee {
-    string public projectName;
     address public owner;
-    uint public targetAmount;
+
+    struct Payment{
+        uint amount;
+        uint timeStamp;
+    }
+
+    struct WalletInfo{
+        string name;
+        string link;
+        address walletAddress;
+    }
+
+    struct Balance {
+        uint totalBalance;
+        uint numPayments;
+        mapping(uint => Payment) payments;
+    }
 
     // Track donations made to project
-    mapping(address=>uint) public donations;
+    mapping(address => Payment) public donations;
+    mapping(address => Balance) public balanceReceived;
+    mapping(address => WalletInfo) public walletMapping;
 
     // Emit events 
-    event DonationEvents(uint _amount, address doner);
+    event DonationEvent(uint _amount, address doner, uint timeStamp);
+    event WalletInfoEvent(string  name, string  link, address walletAddress);
+
 
     // Total donations made to project
     uint public totalDonations;
 
     // Set project Name and Target amout when smart contract is being deployed.
-    constructor (string memory _projectName, uint _targetAmount){
-        projectName =_projectName;
+    constructor (){
         owner = msg.sender;
-        targetAmount = _targetAmount;
     }
 
     modifier onlyOwner(){
         require(msg.sender == owner, "You are not the owner");
         _;
     }
-
-    // Modifier to check if donation target reached.
-    modifier checkIfTargetReached() {
-        require(totalDonations < targetAmount, "Donation target amount has been reached");
-        _;
+    
+    // Create wallet
+    function createWallet(string memory _name, string memory _link) public {
+        WalletInfo memory _wallet = WalletInfo(_name, _link, msg.sender);
+        walletMapping[msg.sender] = _wallet;
+        emit WalletInfoEvent(_name, _link, msg.sender);
+    }
+    
+    function getWallet() public returns(string memory name, string memory link, address walletAddress) {
+        name = walletMapping[msg.sender].name;
+        link = walletMapping[msg.sender].link;
+        walletAddress = walletMapping[msg.sender].walletAddress;
+        // Emit events after getting wallet info data
+        emit WalletInfoEvent(name, link, walletAddress);
+        return (name, link,walletAddress);
     }
 
     // Donate function
-    function donate() checkIfTargetReached public payable {
-        require(targetAmount > totalDonations, "You are very generous but You can't donate more than the Target Amount!");
-        donations[msg.sender] += msg.value;
-        totalDonations += msg.value;
-        emit DonationEvents(msg.value, msg.sender);
+    function donate() public payable {
+        balanceReceived[msg.sender].totalBalance += msg.value;
+        Payment memory payment = Payment(msg.value, block.timestamp);
+        balanceReceived[msg.sender].payments[balanceReceived[msg.sender].numPayments] = payment;
+        balanceReceived[msg.sender].numPayments++;
+        emit DonationEvent(msg.value, msg.sender, block.timestamp);
     }
 
     // Get donation balance from contract
@@ -48,9 +76,10 @@ contract CryptoKoffee {
 
     // Release funds from contract to project
     function releaseFunds(address payable _to, uint _amount) onlyOwner public payable {
-        require(totalDonations > 0, "You don't have enough donations for withdrawal");
+        uint _balance = balanceReceived[msg.sender].totalBalance;
+        require(_balance > 0, "You don't have enough tokens for withdrawal");
         _to.transfer(_amount);
-        emit DonationEvents(_amount, _to);
+        emit DonationEvent(_amount, _to, block.timestamp);
 
     }
 }
