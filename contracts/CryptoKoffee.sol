@@ -30,10 +30,6 @@ contract CryptoKoffee {
     event DonationEvent(uint _amount, address doner, uint timeStamp);
     event WalletInfoEvent(string  name, string  link, address walletAddress);
 
-
-    // Total donations made to project
-    uint public totalDonations;
-
     // Set project Name and Target amout when smart contract is being deployed.
     constructor (){
         owner = msg.sender;
