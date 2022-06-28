@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.4;
 
 contract CryptoKoffee {
     address public owner;
@@ -70,7 +70,7 @@ contract CryptoKoffee {
         return address(this).balance;
     }
 
-    // Release funds from contract to project
+    // Release funds from contract to project 
     function releaseFunds(address payable _to, uint _amount) onlyOwner public payable {
         uint _balance = balanceReceived[msg.sender].totalBalance;
         require(_balance > 0, "You don't have enough tokens for withdrawal");
