@@ -61,7 +61,7 @@ contract CryptoKoffee {
         require(walletMapping[receipientAddress].currentBalance > 0, "You don't have enough balance to withdraw.");
         _;
     }
-    function hash(string memory _string) private pure returns(bytes32) {
+    function hash(string memory _string) public pure returns(bytes32) {
      return keccak256(abi.encodePacked(_string));
     }
 
@@ -82,6 +82,7 @@ contract CryptoKoffee {
         link = walletMapping[msg.sender].link;
         walletAddress = walletMapping[msg.sender].walletAddress;
         walletBalance = walletMapping[msg.sender].currentBalance;
+        numOfDonations = walletMapping[msg.sender].numOfDonations;
         // Emit events after getting wallet info data
         emit WalletInfoEvent(name, link, walletAddress, walletBalance, numOfDonations);
         return (name, link, walletAddress, walletBalance, numOfDonations);
@@ -98,6 +99,7 @@ contract CryptoKoffee {
         payments[msg.sender] = payment;
         totalNumberOfDonations++;
         walletMapping[donationAddress].currentBalance += _amount;
+        walletMapping[donationAddress].numOfDonations += 1;
         emit DonationEvent(_amount, donationAddress, block.timestamp);
         emit PaymentEvent(_amount, block.timestamp, msg.sender, donationAddress, "donation");
     }
