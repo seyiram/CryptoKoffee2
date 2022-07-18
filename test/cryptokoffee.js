@@ -162,9 +162,4 @@ contract("CryptoKoffee", accounts => {
         }
 
     });
-
-    // Test account receiveing donations without wallet registering
-    // Function to prevent multiple wallet with same address 
-    // Test withdraw by owner only
-    // Test if not onwer withdrawing.
   });
