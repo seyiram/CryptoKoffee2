@@ -10,7 +10,7 @@ contract("CryptoKoffee", accounts => {
     
         // Set value of wallet information
         await cryptoKoffeeInstance.hash("hash", { from: accounts[0] });
-    
+
         // Get the value of wallet information
         const storedHash = await cryptoKoffeeInstance.hash("hash", { from: accounts[0] });
 
@@ -25,7 +25,7 @@ contract("CryptoKoffee", accounts => {
 
         // Set value of wallet information
         await cryptoKoffeeInstance.createWallet(hashName, hashLink, { from: accounts[0] });
-  
+
         // Return the values of wallet information stored
         const walletData = await cryptoKoffeeInstance.getWallet.call();
         assert.equal(walletData.name, "0x5c4060ec36e6ba2f35331bc3ec4e78bc60453964c1809704706b1326932f3bf6");
@@ -35,7 +35,24 @@ contract("CryptoKoffee", accounts => {
         assert.equal(walletData.numOfDonations.toNumber(), 0);
     });
 
-    it("...should donate to a wallet.", async () => {  
+    it("...should fail when wallet already exists", async () => {
+        // hash the wallet name and link
+        const hashName = await cryptoKoffeeInstance.hash("walletName")
+        const hashLink = await cryptoKoffeeInstance.hash("projectLink")
+
+        try {
+            // Try creating another wallet 
+            await cryptoKoffeeInstance.createWallet(hashName, hashLink, { from: accounts[0] });
+            assert.fail("A wallet is already associated to this address");
+        }
+        catch (err) {
+            assert.include(err.message, "A wallet is already associated to this address");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    it("...should donate to a wallet with valid amount.", async () => {  
     
         // Set value of wallet information
         await cryptoKoffeeInstance.donate(accounts[0], { from: accounts[1], value: 2000000000000000000  });
@@ -43,7 +60,7 @@ contract("CryptoKoffee", accounts => {
         // Grab the wallet which received the donation 
         const walletData = await cryptoKoffeeInstance.getWallet.call({ from: accounts[0]  });
         const totalNumOfDonations = await cryptoKoffeeInstance.totalNumberOfDonations();
-        console.log(walletData.numOfDonations.toNumber())
+
         // Then assert that the donation was made
         assert.equal(walletData.name, "0x5c4060ec36e6ba2f35331bc3ec4e78bc60453964c1809704706b1326932f3bf6");
         assert.equal(walletData.link, "0x98e2ad7432c52956fab2e46a2c98bbd0397105486c4f117310d944419cd704f3");
@@ -52,9 +69,102 @@ contract("CryptoKoffee", accounts => {
         assert.equal(walletData.numOfDonations.toNumber(), 1);
         assert.equal(totalNumOfDonations, 1);
     });
-// Test account receiveing donations without wallet registering
-// Function to prevent multiple wallet with same address
-// Test if donation is 0
-// Test withdraw by owner only
-// Test if not onwer withdrawing.
+
+    it("...should fail when donate to a wallet with an invalid amount.", async () => {  
+        try {
+            // Set value of wallet information
+            await cryptoKoffeeInstance.donate(accounts[0], { from: accounts[1], value: 0  });
+            assert.fail("Transfer amount has to be greater than 0.");
+        }
+        catch (err) {
+            assert.include(err.message, "Transfer amount has to be greater than 0.");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    it("...should fail when donate to an invalid wallet address", async () => {  
+        try {
+            // Call donate function and provide invalid address
+            await cryptoKoffeeInstance.donate("0x0000000000000000000000000000000000000000", { from: accounts[1], value: 2000000000000000000  });
+            assert.fail("Your address is not registered on CryptoKoffee.");
+        }
+        catch (err) {
+            assert.include(err.message, "Your address is not registered on CryptoKoffee.");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    it("...should return the total donations received in the smart contract.", async () => {  
+        // Call the get donation balance function 
+        const contractBalance = await cryptoKoffeeInstance.getDonationBalance();
+   
+        // Then assert that the total balance is up to the donations made
+        assert.equal(contractBalance.valueOf(), 2000000000000000000);
+      
+    });
+
+    it("...should withdraw funds into a provided wallet address(my wallet).", async () => { 
+
+        // Call the withdraw function 
+        await cryptoKoffeeInstance.withdrawFunds(accounts[0], "1000000000000000000", {from: accounts[0]});
+        
+        // Grab the wallet which the withdrawal was made from 
+        const walletData = await cryptoKoffeeInstance.getWallet.call({ from: accounts[0]  });
+
+        // Call the get donation balance function 
+        const contractBalance = await cryptoKoffeeInstance.getDonationBalance();
+
+        // Then assert that the total contract balance reduces after withdrawal is made 
+        assert.equal(contractBalance.valueOf(), 1000000000000000000);
+
+        // Then assert that the wallet balance is reduced after withdraw
+        assert.equal(walletData.walletBalance.valueOf(), 1000000000000000000);
+      
+    });
+
+    it("...should fail if someone else other than the wallet owner calls the withdraw function", async () => {  
+        try {
+            // Call withdraw function by another wallet user
+            await cryptoKoffeeInstance.withdrawFunds(accounts[0], "1000000000000000000", {from: accounts[1]});
+            assert.fail("Only Wallet owner can perform this activity.");
+        }
+        catch (err) {
+            assert.include(err.message, "Only Wallet owner can perform this activity.");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    it("...should fail if withdraw Funds is called on invalid wallet address", async () => {  
+        try {
+            // Call withdrawFunds function and provide invalid address
+            await cryptoKoffeeInstance.withdrawFunds("0x0000000000000000000000000000000000000000", "1000000000000000000", { from: accounts[0] });
+            assert.fail("Your address is not registered on CryptoKoffee.");
+        }
+        catch (err) {
+            assert.include(err.message, "Your address is not registered on CryptoKoffee.");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    it("...should fail if funds to be withdrawn if more than funds in wallet", async () => {  
+        try {
+            // Call withdrawFunds function and provide amount more than you have in your wallet
+            await cryptoKoffeeInstance.withdrawFunds(accounts[0], "4000000000000000000", { from: accounts[0] });
+            assert.fail("You can't withdraw more than you have in your wallet!");
+        }
+        catch (err) {
+            assert.include(err.message, "You can't withdraw more than you have in your wallet!");
+            assert.include(err.message, "revert", "The error message should contain 'revert'");
+        }
+
+    });
+
+    // Test account receiveing donations without wallet registering
+    // Function to prevent multiple wallet with same address 
+    // Test withdraw by owner only
+    // Test if not onwer withdrawing.
   });

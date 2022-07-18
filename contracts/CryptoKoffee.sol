@@ -57,10 +57,17 @@ contract CryptoKoffee {
         require(walletMapping[receipientAddress].walletAddress != 0x0000000000000000000000000000000000000000, "Your address is not registered on CryptoKoffee.");
         _;
     }
+
+    modifier validateIfWalletExists(address senderAddress) {
+        require(walletMapping[senderAddress].walletAddress != msg.sender, "A wallet is already associated to this address.");
+        _;
+    }
+
     modifier validateReciepientBalance(address receipientAddress) {
         require(walletMapping[receipientAddress].currentBalance > 0, "You don't have enough balance to withdraw.");
         _;
     }
+
     function hash(string memory _string) public pure returns(bytes32) {
      return keccak256(abi.encodePacked(_string));
     }
@@ -69,7 +76,7 @@ contract CryptoKoffee {
         Needs the connected wallet address 9900826
         **remember to hash the _name and _link before sending to chain 8929eth
     **/
-    function createWallet(string memory _name, string memory _link) public {
+    function createWallet(string memory _name, string memory _link) validateIfWalletExists(msg.sender) public {
         bytes32 hashName = hash(_name);
         bytes32 hashLink = hash(_link);
         WalletInfo memory _wallet = WalletInfo(hashName, hashLink, msg.sender, 0, 0);
@@ -92,7 +99,7 @@ contract CryptoKoffee {
      [ Needs a wallet to make the donations to. ] 
      check if donation address has wallet associated with it.
     **/
-    function donate(address donationAddress ) public payable validateReciepientAddress(donationAddress)  {
+    function donate(address donationAddress ) public payable validateReciepientAddress(donationAddress) validateTransferAmount {
         uint _amount = msg.value;
         totalBalance += _amount;
         Payment memory payment = Payment(_amount, block.timestamp, msg.sender, donationAddress, "donation");
@@ -110,7 +117,7 @@ contract CryptoKoffee {
     }
 
     // Release funds from contract to project 
-    function releaseFunds(address payable _to, uint _amount) 
+    function withdrawFunds(address payable _to, uint _amount) 
     validateWalletOwner(msg.sender) validateReciepientAddress(_to) 
     validateReciepientBalance(_to) 
     public payable {
