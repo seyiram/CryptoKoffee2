@@ -15,8 +15,7 @@ contract CryptoKoffee {
     }
 
     struct WalletInfo{
-        bytes32 name;
-        bytes32 link;
+      
         address walletAddress;
         uint currentBalance;
         uint numOfDonations;
@@ -29,7 +28,7 @@ contract CryptoKoffee {
 
     // Emit events 
     event DonationEvent(uint _amount, address doner, uint timeStamp);
-    event WalletInfoEvent(bytes32  name, bytes32  link, address walletAddress, uint currentWalletBalance, uint numOfDonations);
+    event WalletInfoEvent(address walletAddress, uint currentWalletBalance, uint numOfDonations);
     event PaymentEvent(uint amount, uint timeStamp,address sender, address receipient, string description);
     
     constructor(){
@@ -76,37 +75,40 @@ contract CryptoKoffee {
         Needs the connected wallet address 9900826
         **remember to hash the _name and _link before sending to chain 8929eth
     **/
-    function createWallet(string memory _name, string memory _link) validateIfWalletExists(msg.sender) public {
-        bytes32 hashName = hash(_name);
-        bytes32 hashLink = hash(_link);
-        WalletInfo memory _wallet = WalletInfo(hashName, hashLink, msg.sender, 0, 0);
+
+    /** Donate function
+     [ Needs a wallet to make the donations to. ] 
+     check if donation address has wallet associated with it.
+    **/
+    function createWallet() public validateIfWalletExists(msg.sender)  {
+      
+       WalletInfo memory _wallet = WalletInfo( msg.sender, 0, 0);
         walletMapping[msg.sender] = _wallet;
-        emit WalletInfoEvent(hashName, hashLink, msg.sender, 0, 0);
+        emit WalletInfoEvent(msg.sender, 0, 0);
     }
     
-    function getWallet() public returns(bytes32 name, bytes32 link, address walletAddress, uint walletBalance, uint numOfDonations) {
-        name = walletMapping[msg.sender].name;
-        link = walletMapping[msg.sender].link;
+    function getWallet() public returns(address walletAddress, 
+        uint walletBalance, uint numOfDonations) {
+        
         walletAddress = walletMapping[msg.sender].walletAddress;
         walletBalance = walletMapping[msg.sender].currentBalance;
         numOfDonations = walletMapping[msg.sender].numOfDonations;
         // Emit events after getting wallet info data
-        emit WalletInfoEvent(name, link, walletAddress, walletBalance, numOfDonations);
-        return (name, link, walletAddress, walletBalance, numOfDonations);
+        emit WalletInfoEvent(walletAddress, walletBalance, numOfDonations);
+        return (walletAddress, walletBalance, numOfDonations);
     }
 
     /** Donate function
      [ Needs a wallet to make the donations to. ] 
      check if donation address has wallet associated with it.
     **/
-    function donate(address donationAddress ) public payable validateReciepientAddress(donationAddress) validateTransferAmount {
+    function donate(address donationAddress ) public payable validateReciepientAddress(donationAddress) validateTransferAmount  {
         uint _amount = msg.value;
         totalBalance += _amount;
-        Payment memory payment = Payment(_amount, block.timestamp, msg.sender, donationAddress, "donation");
-        payments[msg.sender] = payment;
+        payments[msg.sender] =  Payment({amount: _amount, timeStamp: block.timestamp, sender: msg.sender, receipient: donationAddress, description: "donation"});
         totalNumberOfDonations++;
         walletMapping[donationAddress].currentBalance += _amount;
-        walletMapping[donationAddress].numOfDonations += 1;
+        walletMapping[donationAddress].numOfDonations++;
         emit DonationEvent(_amount, donationAddress, block.timestamp);
         emit PaymentEvent(_amount, block.timestamp, msg.sender, donationAddress, "donation");
     }
@@ -117,10 +119,11 @@ contract CryptoKoffee {
     }
 
     // Release funds from contract to project 
-    function withdrawFunds(address payable _to, uint _amount) 
+    function withdrawFunds(address payable _to, uint _amount)  public payable
     validateWalletOwner(msg.sender) validateReciepientAddress(_to) 
-    validateReciepientBalance(_to) 
-    public payable {
+    validateReciepientBalance(_to)
+    
+     {
         require(walletMapping[_to].currentBalance >= _amount, "You can't withdraw more than you have in your wallet!");
         walletMapping[_to].currentBalance -= _amount;
         totalBalance -= _amount;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
@@ -128,3 +131,4 @@ contract CryptoKoffee {
         emit PaymentEvent(_amount, block.timestamp, msg.sender, _to, "withdraw");
     }
 }
+
