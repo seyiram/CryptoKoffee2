@@ -1,6 +1,8 @@
 
 import cardImg from '../../assets/img/card__image.jpg'
 import Button from 'components/Button/Button';
+import { connectToWallet } from 'hooks/Wallet';
+
 /* import WalletModal from './WalletModal';
  import { useModal } from '../contexts/ModalContext';
  import PersonalPageModal from '../../components/UserInfoPageModal/UserInfoPageModal';
@@ -20,7 +22,7 @@ const WelcomeCard = () => {
                     <p className="text-zinc-500 md:text-base text-sm text-center w-[90%]">Accept donations directly to your wallet with CryptoKoffee</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-2 justify-center place-items-center m-8 text-sm ">
-                    <span className="px-1 md:whitespace-nowrap"> <Button ><span>Connect Wallet</span></Button></span>
+                    <span className="px-1 md:whitespace-nowrap"> <Button ><span onClick={connectToWallet}>Connect Wallet</span></Button></span>
                     <span className='px-1 md:whitespace-nowrap'><Button><span>Start My Page</span></Button></span>
                 </div>
             </div>

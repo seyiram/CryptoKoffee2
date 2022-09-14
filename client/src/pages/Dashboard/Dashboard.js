@@ -6,7 +6,7 @@ import Sidebar
  import Overview from "components/Overview/Overview";
  import UserProfilePage from "pages/UserProfilePage/UserProfilePage";
  import UserAccountPage from "pages/UserAccountPage/UserAccountPage";
-import Button from "../../components/Button/Button";
+
 
 
 const Dashboard = ({ connectToWallet }) => {

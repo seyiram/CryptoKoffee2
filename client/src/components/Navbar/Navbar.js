@@ -5,7 +5,7 @@ import logo from '../../assets/img/cryptokoffee.svg'
 // import WalletModal from './WalletModal';
 
 
-const Navbar = () => {
+const Navbar = ({ connectToWallet }) => {
     const [openMenu, setOpenMenu] = useState(false);
     // const { walletModalOn, setWalletModalOn, setChoice, handleWalletToggleModal } = useModal();
 
@@ -34,7 +34,7 @@ const Navbar = () => {
                     </ul>
                     <div className="md:flex md:items-center md:flex-nowrap flex-wrap ">
                         <div className="md:text-md md:my-0 my-7">
-                            <Button><span>Connect Wallet</span></Button>
+                            <Button><span onClick={connectToWallet}>Connect Wallet</span></Button>
                         </div>
                         <div className="text-2xl md:ml-5">
                             <ion-icon name="moon-outline"></ion-icon>

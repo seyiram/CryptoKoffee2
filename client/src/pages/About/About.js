@@ -4,7 +4,7 @@ const About = () => {
     return (
         <div className="p-20 flex justify-center ">
             <div className="bg-white max-w-xl shadow-lg mt-10 flex md:flex-row flex-col rounded  ">
-                <img className="min-w-[50%] rounded-tl rounded-bl object-cover" src={aboutImg} alt="about" />
+                <img className="min-w-[50%] rounded-tl md:rounded-bl md:rounded-tr-none rounded-tr object-cover" src={aboutImg} alt="about" />
                 <div className=" md:w-[50%] flex flex-col justify-center items-center p-10 m-2">
                     <p className="font-rouge-script font-semibold text-3xl">Hey!</p>
                     <p className=" text-lg mt-5 md:whitespace-nowrap ">Welcome to CryptoKoffee</p>

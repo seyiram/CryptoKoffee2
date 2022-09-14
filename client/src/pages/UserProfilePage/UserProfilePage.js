@@ -4,9 +4,9 @@ import logo from '../../assets/img/cryptokoffee_cup.png'
 const UserProfilePage = () => {
   return (
     <div className=" md:w-[80%] w-full rounded flex justify-center items-center overflow-hidden mt-10 md:ml-32 ">
-      <span className="absolute top-40 right-60 px-3 py-3 shadow-lg  text-xl rounded-full flex justify-center items-center cursor-pointer"><ion-icon name="share-outline"></ion-icon></span>
+      <span className="absolute md:top-40 md:right-[15%] right-14 top-[42rem]  px-3 py-3 shadow-lg  text-xl rounded-full flex justify-center items-center cursor-pointer"><ion-icon name="share-outline"></ion-icon></span>
       <div className="bg-white md:p-3 md:w-[80%] rounded  mt-20  md:ml-48 shadow flex justify-center items-center flex-col w-full m-10">
-        <div className="flex flex-col justify-center items-center md:mt-10 mb-6">
+        <div className="flex flex-col justify-center items-center md:mt-10 mb-6 mt-5">
           <p className="text-lg text-gray-800 mt-5 hover:underline hover:decoration-2 hover:decoration-cryptokoffee-purple hover:text-cryptokoffee"><a href="#/">cryptokoffee.co/0x94374</a></p>
           <span className="mt-5 text-3xl text-cryptokoffee rotate-45 hover:text-cryptokoffee-purple"><a href="http://twitter.com/cryptokoffeee"><ion-icon name="link-outline"></ion-icon></a></span>
         </div>
@@ -36,7 +36,7 @@ const UserProfilePage = () => {
             <div className="mb-5">
               <p className="mb-2 text-slate-900 text-sm">Enter a custom amount or select a donation level above</p>
               <label htmlFor="#custom-amount" className="mr-5">Custom Amount</label>
-              <span className="absolute px-4 mt-4 items-center text-sm ">$</span>
+              <span className="absolute px-4 md:mt-4 mt-10 items-center text-sm">$</span>
               <input id="custom-amount" placeholder=" 0.00" className="px-4 py-1 pl-4 border rounded-md m-2 focus:border-cryptokoffee focus:outline-none " />
             </div>
             <div>
